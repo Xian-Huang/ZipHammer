@@ -1,3 +1,11 @@
+/* 
+  Project:ZipHammer
+  Author:@LiDingyiii
+ */
+
+ /*
+    TODO 引进toko 实现多线程尝试密码
+  */
 use clap::{command, Parser};
 use std::{fs::File, path::Path, result};
 use zip::ZipArchive;
@@ -30,7 +38,7 @@ fn create_archive(path:&Path) -> Result<ZipArchive<File>, String> {
 
 fn create_pwds() -> Result<Vec<String>, String> {
     /*
-     创建密码本
+        TODO 根据参数创建密码本
     */
 
     let mut passwords: Vec<String> = Vec::new();
