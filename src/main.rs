@@ -7,8 +7,21 @@
     TODO 引进toko 实现多线程尝试密码
   */
 use clap::{command, Parser};
-use std::{fs::File, path::Path, result};
+use core::panic;
+use std::{fs::File, path::Path};
 use zip::ZipArchive;
+
+
+enum WordType {
+    Number,
+    Letter,
+    Special
+}
+
+struct Password{
+    password:Vec<u8>,
+}
+
 
 #[derive(Parser, Debug)]
 #[command(version, about, long_about = None)]
@@ -36,15 +49,17 @@ fn create_archive(path:&Path) -> Result<ZipArchive<File>, String> {
     Ok(archive)
 }
 
-fn create_pwds() -> Result<Vec<String>, String> {
+fn create_pwds(length:u8) -> Result<Vec<String>, String> {
     /*
         TODO 根据参数创建密码本
     */
 
     let mut passwords: Vec<String> = Vec::new();
 
-    passwords.push("2342sdfwwsd".to_string());
-    passwords.push("123456".to_string());
+    for i in 0..length{
+
+    }
+
 
     Ok(passwords)
 }
