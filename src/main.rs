@@ -65,11 +65,13 @@ struct PasswordCreater {
 }
 
 impl PasswordCreater {
-    fn new(length: u8) {
-        let mut wordtypes: Vec<WordType> = Vec::new();
+    fn new(length: u8,wordtypes:Vec<&WordType>) {
+        let wt = WordType::create_wordtypes(length, wordtypes);
 
         for i in 0..length {
-            
+            todo!("创建指定长度的密码");
+            let select_wt = *wt.get(i as usize).unwrap();
+            let util = select_wt.create_until();
         }
     }
 
