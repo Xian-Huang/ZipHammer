@@ -1,27 +1,56 @@
-/* 
-  Project:ZipHammer
-  Author:@LiDingyiii
- */
+/*
+ Project:ZipHammer
+ Author:@LiDingyiii
+*/
 
- /*
-    TODO 引进toko 实现多线程尝试密码
-  */
+/*
+  TODO 引进toko 实现多线程尝试密码
+*/
 use clap::{command, Parser};
+use rand::Rng;
 use core::panic;
 use std::{fs::File, path::Path};
 use zip::ZipArchive;
 
-
 enum WordType {
     Number,
     Letter,
-    Special
+    Special,
 }
 
-struct Password{
-    password:Vec<u8>,
+impl WordType {
+    fn create_wordtypes(password_length:u8,wordtypes:Vec<&WordType>)->Vec<&WordType>{
+        /*
+            创建密码格式
+         */
+        let mut wordtypes_res:Vec<&WordType> = Vec::new();
+        for _ in 0..password_length{
+            let rand_seek = wordtypes.len();
+            let select = rand::thread_rng().gen_range(0..rand_seek);
+            if let Some(wt) = wordtypes.get(select){
+                wordtypes_res.push(wt);
+            };
+        }
+        wordtypes_res
+    }
 }
 
+struct PasswordCreater {
+    password: Vec<u8>,
+    types: Vec<WordType>,
+}
+
+impl PasswordCreater {
+    fn new(length: u8) {
+        let mut wordtypes: Vec<WordType> = Vec::new();
+
+        for i in 0..length {
+            
+        }
+    }
+
+    fn create_password_set() {}
+}
 
 #[derive(Parser, Debug)]
 #[command(version, about, long_about = None)]
@@ -43,23 +72,22 @@ struct Args {
     capital: bool,
 }
 
-fn create_archive(path:&Path) -> Result<ZipArchive<File>, String> {
+fn create_archive(path: &Path) -> Result<ZipArchive<File>, String> {
     let file = File::open(path);
     let archive = zip::ZipArchive::new(file.unwrap()).unwrap();
     Ok(archive)
 }
 
-fn create_pwds(length:u8) -> Result<Vec<String>, String> {
+fn create_pwds(length: u8) -> Result<Vec<String>, String> {
     /*
         TODO 根据参数创建密码本
     */
 
+    let mut password_type: Vec<WordType> = Vec::new();
+
     let mut passwords: Vec<String> = Vec::new();
 
-    for i in 0..length{
-
-    }
-
+    for i in 0..length {}
 
     Ok(passwords)
 }
@@ -69,26 +97,24 @@ fn main() {
 
     let path = args_matcher.path;
 
-    let mut archive = match create_archive(Path::new(path.as_str())){
+    let mut archive = match create_archive(Path::new(path.as_str())) {
         Ok(f) => f,
         Err(e) => {
-            panic!("{}",e);
-        },
+            panic!("{}", e);
+        }
     };
 
     let passwords = create_pwds().unwrap();
 
-    let mut progress_sum  = passwords.len();
+    let mut progress_sum = passwords.len();
     let mut current_progress = 0;
 
-    for password in passwords{
+    for password in passwords {
         println!("TRY TO APPLY PASSWORD {password:20} progress:{current_progress}/{progress_sum}");
         let file = archive.by_index_decrypt(0, password.as_bytes());
-        if let Ok(_) = file{
-            println!("RIGHT PASSWORD=>{}",password);
+        if let Ok(_) = file {
+            println!("RIGHT PASSWORD=>{}", password);
         }
-        current_progress += 1; 
+        current_progress += 1;
     }
-
-
 }
