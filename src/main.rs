@@ -18,6 +18,9 @@ enum WordType {
     Special,
 }
 
+
+
+
 impl WordType {
     fn create_wordtypes(password_length:u8,wordtypes:Vec<&WordType>)->Vec<&WordType>{
         /*
@@ -32,6 +35,27 @@ impl WordType {
             };
         }
         wordtypes_res
+    }
+
+    fn create_until(self:&Self){
+        // 创建密码元素
+        match self {
+            WordType::Number => todo!(),
+            WordType::Letter => todo!(),
+            WordType::Special => todo!(),
+        }
+    }
+
+    fn create_number()->u8{
+        rand::thread_rng().gen_range(0..=9)
+    }
+
+    fn create_letter()->u8{
+        todo!("创建字母元素")
+    }
+
+    fn create_special()->u8{
+        todo!("创建特殊字符元素")
     }
 }
 
