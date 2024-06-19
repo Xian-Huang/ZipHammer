@@ -1,2 +1,2 @@
 pub mod wordtype;
-pub mod passwordcreater;
+pub mod password;
