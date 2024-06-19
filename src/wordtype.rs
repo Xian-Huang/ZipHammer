@@ -1,5 +1,7 @@
 use rand::{self, Rng};
+use crate::password::PasswordConfig;
 
+#[derive(Clone, Copy)]
 pub enum WordType {
     Number,
     Letter,
@@ -7,16 +9,17 @@ pub enum WordType {
 }
 
 impl WordType {
-    pub fn create_wordtypes(password_length: u8, wordtypes: Vec<&WordType>) -> Vec<&WordType> {
+    pub fn create_wordtypes(password_length: u8,pconfig:PasswordConfig) -> Vec<WordType> {
         /*
            创建密码格式
         */
-        let mut wordtypes_res: Vec<&WordType> = Vec::new();
+        let mut wordtypes_res: Vec<WordType> = Vec::new();
+        let wordtypes = pconfig.types;
         for _ in 0..password_length {
             let rand_seek = wordtypes.len();
             let select = rand::thread_rng().gen_range(0..rand_seek);
             if let Some(wt) = wordtypes.get(select) {
-                wordtypes_res.push(wt);
+                wordtypes_res.push(*wt);
             };
         }
         wordtypes_res
