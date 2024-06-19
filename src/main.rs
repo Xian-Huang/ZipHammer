@@ -6,35 +6,18 @@
 /*
   TODO 引进toko 实现多线程尝试密码
 */
-use clap::{command, Parser};
-use ZipHammer::create_pwds;
+use clap::Parser;
+use ZipHammer::{create_pwds, get_passwordconfig, password::PasswordCreater};
 use core::panic;
 use std::{fs::File, path::Path};
 use zip::ZipArchive;
+use ZipHammer::Args;
 
 
 
 
 
-#[derive(Parser, Debug)]
-#[command(version, about, long_about = None)]
-struct Args {
-    /// 文件路径
-    #[arg(short, long)]
-    path: String,
 
-    /// 密码中是否包含数字[0-9],默认包含
-    #[arg(short, long, default_value_t = true)]
-    number: bool,
-
-    // 密码中是否包含字母[a-z],默认包含
-    #[arg(short, long, default_value_t = true)]
-    letter: bool,
-
-    // 字母是否开启大小写
-    #[arg(short, long, default_value_t = true)]
-    capital: bool,
-}
 
 fn create_archive(path: &Path) -> Result<ZipArchive<File>, String> {
     let file = File::open(path);
@@ -44,10 +27,11 @@ fn create_archive(path: &Path) -> Result<ZipArchive<File>, String> {
 
 
 
-fn main() {
-    let args_matcher = Args::parse();
 
-    let path = args_matcher.path;
+fn main() {
+    let args_matcher: &Args = &Args::parse();
+
+    let path = args_matcher.path.clone();
 
     let mut archive = match create_archive(Path::new(path.as_str())) {
         Ok(f) => f,
@@ -55,6 +39,12 @@ fn main() {
             panic!("{}", e);
         }
     };
+
+    // 根据参数生成密码配置
+    let passwordconfig = get_passwordconfig(args_matcher);
+
+    // 根据配置生成密码本
+    let passwordcreater = PasswordCreater::new(passwordconfig, config);
 
     let passwords = create_pwds(10).unwrap();
 
