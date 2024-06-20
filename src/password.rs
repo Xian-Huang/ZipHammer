@@ -73,7 +73,6 @@ impl PasswordCreater {
         /// 生成密码集合
         /// ! 存在问题，不能直接生成到内存中，否则占用内存过高,暂时写入中间文件中
 
-        let filenmame = self.create_rand_filename();
         let tmp_path = Path::new("./tmp");
         if !tmp_path.exists(){
             match  DirBuilder::new().create(tmp_path){
@@ -85,7 +84,17 @@ impl PasswordCreater {
                 },
             }
         }
+
+        let mut filenmame = self.create_rand_filename();
+
+        // 检查文件是否存在 存在则重新生成文件名称
+        while tmp_path.join(filenmame.clone()).exists(){
+            filenmame = self.create_rand_filename();
+        };
+
         let file_path = tmp_path.join(filenmame);
+       
+
         let file = match File::create(file_path.clone()){
             Ok(f) => {
                 println!("{} created",file_path.to_str().unwrap());
