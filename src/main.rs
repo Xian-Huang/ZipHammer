@@ -40,7 +40,7 @@ fn main() {
     };
 
     // 根据配置生成密码本
-    let passwordcreater = PasswordCreater::new(passwordconfig);
+    let passwordcreater = PasswordCreater::new(&passwordconfig);
 
     let passwords = create_pwds(10).unwrap();
 

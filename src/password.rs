@@ -52,26 +52,17 @@ pub struct PasswordCreater {
 }
 
 impl PasswordCreater {
-    pub fn new(config: PasswordConfig) -> Self {
-        let length = config.get_pwd_len();
-        let wt = WordType::create_wordtypes(length, config); // 根据给定参数设置密码格式
-        let password: Vec<u8> = Vec::new();
-        let mut password_wt = Vec::new();
-        for i in 0..length {
-            let select_wt = *wt.get(i as usize).unwrap();
-            let util = select_wt.create_until();
-            password_wt.push(select_wt);
-        }
-
+    pub fn new(config: &PasswordConfig) -> Self {
         PasswordCreater {
             passwords: Vec::new(),
-            config: PasswordConfig::default(),
+            config:config.clone(),
         }
     }
 
-    fn create_password_set() {
+    fn create_password_set(self:&Self){
         /// 生成密码集合
-        todo!("生成密码集合");
+        self.passwords.push()
+        
     }
 
     fn get_password_set(self:&Self)->&Vec<Password>{
