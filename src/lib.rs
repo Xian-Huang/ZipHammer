@@ -69,9 +69,13 @@ pub fn get_passwordconfig(args: &Args) -> Result<PasswordConfig, ArgError> {
     if wordtypes.len() <= 0 {
         return Err(ArgError::new());
     }
+    
+
     Ok(PasswordConfig {
         types: wordtypes,
         capital: args.capital,
+        min_length: args.min_length,
+        max_length: args.max_length,
     })
 }
 

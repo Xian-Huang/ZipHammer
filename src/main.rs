@@ -7,26 +7,17 @@
   TODO 引进toko 实现多线程尝试密码
 */
 use clap::Parser;
-use ZipHammer::{create_pwds, get_passwordconfig, password::PasswordCreater};
 use core::panic;
 use std::{fs::File, path::Path};
 use zip::ZipArchive;
 use ZipHammer::Args;
-
-
-
-
-
-
+use ZipHammer::{create_pwds, get_passwordconfig, password::PasswordCreater};
 
 fn create_archive(path: &Path) -> Result<ZipArchive<File>, String> {
     let file = File::open(path);
     let archive = zip::ZipArchive::new(file.unwrap()).unwrap();
     Ok(archive)
 }
-
-
-
 
 fn main() {
     let args_matcher: &Args = &Args::parse();
@@ -41,10 +32,15 @@ fn main() {
     };
 
     // 根据参数生成密码配置
-    let passwordconfig = get_passwordconfig(args_matcher);
+    let passwordconfig: ZipHammer::password::PasswordConfig = match get_passwordconfig(args_matcher) {
+        Ok(config) => config,
+        Err(e) => {
+            panic!("PasswordConfig Created Fail");
+        }
+    };
 
     // 根据配置生成密码本
-    let passwordcreater = PasswordCreater::new(passwordconfig, config);
+    let passwordcreater = PasswordCreater::new(passwordconfig);
 
     let passwords = create_pwds(10).unwrap();
 

@@ -18,17 +18,29 @@ pub struct PasswordConfig {
     pub max_length: u32,
 }
 
+
+impl PasswordConfig{
+    pub fn get_pwd_len(self:&Self)->u8{
+        (self.max_length-self.min_length).try_into().unwrap()
+    }
+}
+
+struct Password{
+    value:Vec<u8>
+}
+
 // 密码生成器
 pub struct PasswordCreater {
     /// 密码（btype）
-    password: Vec<u8>,
+    password: Vec<Password>,
 
     /// 密码配置
     config: PasswordConfig,
 }
 
 impl PasswordCreater {
-    pub fn new(length: u8, config: PasswordConfig) -> Self {
+    pub fn new(config: PasswordConfig) -> Self {
+        let length = config.get_pwd_len();
         let wt = WordType::create_wordtypes(length, config); // 根据给定参数设置密码格式
         let password: Vec<u8> = Vec::new();
         let mut password_wt = Vec::new();
