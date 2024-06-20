@@ -4,7 +4,7 @@
 */
 
 /*
-  TODO 引进toko 实现多线程尝试密码
+  TODO 引进tokio 实现多线程尝试密码
 */
 use clap::Parser;
 use core::panic;
