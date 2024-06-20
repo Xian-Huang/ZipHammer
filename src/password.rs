@@ -3,7 +3,7 @@ use std::collections::btree_map::Range;
 use crate::wordtype::WordType;
 
 // 定义密码生成规则
-#[derive(Default)]
+#[derive(Default,Clone)]
 pub struct PasswordConfig {
     /// 密码包含的元素类型
     pub types: Vec<WordType>,
@@ -25,14 +25,27 @@ impl PasswordConfig{
     }
 }
 
+#[derive(Clone)]
 struct Password{
     value:Vec<u8>
 }
 
+impl Password {
+    pub fn get_bpwd(self:&Self)->Vec<u8>{
+        self.value.clone()
+    }
+
+    pub fn get_pwd(self:&Self)->String{
+        todo!("将btype转换为String");
+    }
+}
+
+
 // 密码生成器
+#[derive(Clone)]
 pub struct PasswordCreater {
     /// 密码（btype）
-    password: Vec<Password>,
+    passwords: Vec<Password>,
 
     /// 密码配置
     config: PasswordConfig,
@@ -51,10 +64,18 @@ impl PasswordCreater {
         }
 
         PasswordCreater {
-            password: Vec::new(),
+            passwords: Vec::new(),
             config: PasswordConfig::default(),
         }
     }
 
-    fn create_password_set() {}
+    fn create_password_set() {
+        /// 生成密码集合
+        todo!("生成密码集合");
+    }
+
+    fn get_password_set(self:&Self)->&Vec<Password>{
+        /// 获取密码集合
+        &self.passwords
+    }
 }
