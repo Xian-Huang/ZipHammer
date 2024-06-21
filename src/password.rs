@@ -106,6 +106,7 @@ impl PasswordCreater {
     }
 
     fn create_password(length:u32,wts:&Vec<WordType>)->Vec<u8>{
+        // ! 应当按照顺序生成 而不是随机生成
         let mut password = Vec::new();
         for index in 0..length{
             let wt = wts.get(index as usize).unwrap();
@@ -115,7 +116,7 @@ impl PasswordCreater {
     }
 
     fn create_pwdtypes(length:u32,wts:&Vec<WordType>)->Vec<WordType>{
-        // 生成指定长度 密码格式Vec
+        // 生成指定长度 密码格式Vec<WirdType>
         let mut new_wrodtypes = Vec::new();
         for i in 0..length{
             let select = rand::thread_rng().gen_range(0..wts.len());
@@ -137,10 +138,11 @@ impl PasswordCreater {
         for length in self.config.min_length..=self.config.max_length{
             let wts = self.config.types.clone();
             // 生成长度为length的密码
-            
+            let pwd_counts = length.pow(2);
+            for _ in 0..pwd_counts{
+                
+            }
         }
-
-        
     }
 
     fn get_password_set(self: &Self) -> &Vec<Password> {
