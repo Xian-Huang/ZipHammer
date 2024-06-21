@@ -8,7 +8,7 @@
 */
 use clap::Parser;
 use core::panic;
-use std::io::{self, BufWriter, Read, Write};
+use std::io;
 use rand::Rng;
 use std::{fs::File, path::Path};
 use zip::ZipArchive;
@@ -59,29 +59,9 @@ fn main() {
         let mut outfile = File::create("./res.md").unwrap();
         if let Ok(mut f) = file {
             println!("RIGHT PASSWORD=>{}:{}", password, f.name());
-            io::copy(&mut f, &mut outfile);
+            io::copy(&mut f, &mut outfile).unwrap();
             break;
         }
     }
-    // for length in self.config.min_length..=self.config.max_length{
-    //     let wts = self.config.types.clone();
-    //     // 生成长度为length的密码
-    //     let pwd_counts = length.pow(2);
-    //     for _ in 0..pwd_counts{
-    //     }
-    // }
-
-    // let passwords = create_pwds(10).unwrap();
-
-    // let mut progress_sum = passwords.len();
-    // let mut current_progress = 0;
-
-    // for password in passwords {
-    //     println!("TRY TO APPLY PASSWORD {password:20} progress:{current_progress}/{progress_sum}");
-    //     let file = archive.by_index_decrypt(0, password.as_bytes());
-    //     if let Ok(_) = file {
-    //         println!("RIGHT PASSWORD=>{}", password);
-    //     }
-    //     current_progress += 1;
-    // }
+ 
 }
