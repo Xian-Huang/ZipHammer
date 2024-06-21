@@ -1,7 +1,7 @@
 use rand::{self, Rng};
 use crate::password::PasswordConfig;
 
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy,Debug)]
 pub enum WordType {
     Number,
     Letter,
@@ -35,7 +35,7 @@ impl WordType {
     }
 
     pub fn create_number(self: &Self) -> u8 {
-        rand::thread_rng().gen_range(0..=9)
+        rand::thread_rng().gen_range( 48..=57)
     }
 
     pub fn create_letter(self: &Self, b:bool) -> u8 {

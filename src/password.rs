@@ -105,20 +105,32 @@ impl PasswordCreater {
         Ok(file)
     }
 
-    fn create_password(length:u32,wts:&Vec<WordType>)->Vec<u8>{
+    pub fn create_password(self,length:u32)->Vec<u8>{
         // ! 应当按照顺序生成 而不是随机生成
         let mut password = Vec::new();
-        for index in 0..length{
-            let wt = wts.get(index as usize).unwrap();
+        let types = &self.config.types;
+        for _ in 0..length{
+            let select: usize = rand::thread_rng().gen_range(0..types.len());
+            let wt = types.get(select).unwrap();
             password.push(wt.create_until());
         }
         password
     }
 
+    // fn create_password(length:u32,wts:&Vec<WordType>)->Vec<u8>{
+    //     // ! 应当按照顺序生成 而不是随机生成
+    //     let mut password = Vec::new();
+    //     for index in 0..length{
+    //         let wt = wts.get(index as usize).unwrap();
+    //         password.push(wt.create_until());
+    //     }
+    //     password
+    // }
+
     fn create_pwdtypes(length:u32,wts:&Vec<WordType>)->Vec<WordType>{
         // 生成指定长度 密码格式Vec<WirdType>
         let mut new_wrodtypes = Vec::new();
-        for i in 0..length{
+        for _ in 0..length{
             let select = rand::thread_rng().gen_range(0..wts.len());
             new_wrodtypes.push(*wts.get(select).unwrap());
         }
@@ -127,26 +139,18 @@ impl PasswordCreater {
 
     
 
-    fn create_password_set(self: &Self) {
-        /// 生成密码集合
-        /// ! 存在问题，不能直接生成到内存中，否则占用内存过高,暂时写入中间文件中
+    // fn create_password_set(self: &Self) {
+    //     /// 生成密码集合
+    //     /// ! 存在问题，不能直接生成到内存中，否则占用内存过高,暂时写入中间文件中
         
-        // 生成文件
-        let file = self.create_password_file().unwrap();
-        let mut buf = BufWriter::new(file);
+    //     // 生成文件
+    //     let file = self.create_password_file().unwrap();
+    //     let mut buf = BufWriter::new(file);
 
-        for length in self.config.min_length..=self.config.max_length{
-            let wts = self.config.types.clone();
-            // 生成长度为length的密码
-            let pwd_counts = length.pow(2);
-            for _ in 0..pwd_counts{
-                
-            }
-        }
-    }
+    // }
 
-    fn get_password_set(self: &Self) -> &Vec<Password> {
-        /// 获取密码集合
-        &self.passwords
-    }
+    // fn get_password_set(self: &Self) -> &Vec<Password> {
+    //     /// 获取密码集合
+    //     &self.passwords
+    // }
 }

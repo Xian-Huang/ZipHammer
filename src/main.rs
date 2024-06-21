@@ -8,10 +8,12 @@
 */
 use clap::Parser;
 use core::panic;
+use std::io::{self, BufWriter, Read, Write};
+use rand::Rng;
 use std::{fs::File, path::Path};
 use zip::ZipArchive;
 use ZipHammer::Args;
-use ZipHammer::{create_pwds, get_passwordconfig, password::PasswordCreater};
+use ZipHammer::{get_passwordconfig, password::PasswordCreater};
 
 fn create_archive(path: &Path) -> Result<ZipArchive<File>, String> {
     let file = File::open(path);
@@ -32,27 +34,54 @@ fn main() {
     };
 
     // 根据参数生成密码配置
-    let passwordconfig: ZipHammer::password::PasswordConfig = match get_passwordconfig(args_matcher) {
+    let passwordconfig: ZipHammer::password::PasswordConfig = match get_passwordconfig(args_matcher)
+    {
         Ok(config) => config,
-        Err(e) => {
+        Err(_) => {
             panic!("PasswordConfig Created Fail");
         }
     };
 
     // 根据配置生成密码本
-    let passwordcreater = PasswordCreater::new(&passwordconfig);
+    let passwordcreater = &PasswordCreater::new(&passwordconfig);
 
-    let passwords = create_pwds(10).unwrap();
+    loop {
+        let length =
+            rand::thread_rng().gen_range(passwordconfig.min_length..=passwordconfig.max_length);
 
-    let mut progress_sum = passwords.len();
-    let mut current_progress = 0;
+        let numbers = &passwordcreater.clone().create_password(length);
+        let chars: Vec<char> = numbers.iter().map(|&b| b as char).collect();
+        let password: String = chars.into_iter().collect();
 
-    for password in passwords {
-        println!("TRY TO APPLY PASSWORD {password:20} progress:{current_progress}/{progress_sum}");
-        let file = archive.by_index_decrypt(0, password.as_bytes());
-        if let Ok(_) = file {
-            println!("RIGHT PASSWORD=>{}", password);
+        println!("TRY TO APPLY PASSWORD {:?}", password);
+        let file = archive.by_index_decrypt(0, numbers);
+        
+        let mut outfile = File::create("./res.md").unwrap();
+        if let Ok(mut f) = file {
+            println!("RIGHT PASSWORD=>{}:{}", password, f.name());
+            io::copy(&mut f, &mut outfile);
+            break;
         }
-        current_progress += 1;
     }
+    // for length in self.config.min_length..=self.config.max_length{
+    //     let wts = self.config.types.clone();
+    //     // 生成长度为length的密码
+    //     let pwd_counts = length.pow(2);
+    //     for _ in 0..pwd_counts{
+    //     }
+    // }
+
+    // let passwords = create_pwds(10).unwrap();
+
+    // let mut progress_sum = passwords.len();
+    // let mut current_progress = 0;
+
+    // for password in passwords {
+    //     println!("TRY TO APPLY PASSWORD {password:20} progress:{current_progress}/{progress_sum}");
+    //     let file = archive.by_index_decrypt(0, password.as_bytes());
+    //     if let Ok(_) = file {
+    //         println!("RIGHT PASSWORD=>{}", password);
+    //     }
+    //     current_progress += 1;
+    // }
 }

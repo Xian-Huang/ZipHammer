@@ -15,11 +15,11 @@ pub struct Args {
     pub length: u32,
 
     ///密码最大长度，设置该参数后必须设置 最小长度 且 length无效
-    #[arg(short, long)]
+    #[arg(long,required=false)]
     pub min_length: u32,
 
     ///密码最大长度，设置该参数后必须设置 最大长度 且 length无效
-    #[arg(short, long)]
+    #[arg(long,required=false)]
     pub max_length: u32,
 
     /// 密码中是否包含数字[0-9],默认包含
@@ -27,11 +27,11 @@ pub struct Args {
     pub number: bool,
 
     // 密码中是否包含字母[a-z],默认包含
-    #[arg(short, long, default_value_t = true)]
-    pub letter: bool,
+    #[arg(long, default_value_t = false)]
+    pub isletter: bool,
 
     // 字母是否开启大小写
-    #[arg(short, long, default_value_t = true)]
+    #[arg(short, long, default_value_t = false)]
     pub capital: bool,
 
     // 密码中是否包含特殊字符 默认不包含
@@ -39,26 +39,26 @@ pub struct Args {
     pub special: bool,
 }
 
-pub fn create_pwds(length: u8) -> Result<Vec<String>, String> {
-    /*
-        TODO 根据参数创建密码本
-    */
+// pub fn create_pwds(length: u8) -> Result<Vec<String>, String> {
+//     /*
+//         TODO 根据参数创建密码本
+//     */
 
-    let mut password_type: Vec<WordType> = Vec::new();
+//     let mut password_type: Vec<WordType> = Vec::new();
 
-    let mut passwords: Vec<String> = Vec::new();
+//     let mut passwords: Vec<String> = Vec::new();
 
-    for i in 0..length {}
+//     for i in 0..length {}
 
-    Ok(passwords)
-}
+//     Ok(passwords)
+// }
 
 pub fn get_passwordconfig(args: &Args) -> Result<PasswordConfig, ArgError> {
     // 创建PasswordConfig
 
     let mut wordtypes = Vec::new();
 
-    if args.letter {
+    if args.isletter {
         wordtypes.push(WordType::Letter);
     }
 
