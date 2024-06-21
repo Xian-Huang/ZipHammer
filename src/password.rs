@@ -1,8 +1,8 @@
-use std::{collections::btree_map::Range, fmt::format, fs::{DirBuilder, File}, path::Path};
+use std::{collections::btree_map::Range, fmt::format, fs::{DirBuilder, File}, io::{self, BufWriter, Write}, path::Path, vec};
 
 use rand::{distributions::Alphanumeric, Rng};
 
-use crate::wordtype::WordType;
+use crate::wordtype::{self, WordType};
 
 // 定义密码生成规则
 #[derive(Default, Clone)]
@@ -67,11 +67,8 @@ impl PasswordCreater {
             .collect()
     }
 
-    
 
-    fn create_password_set(self: &Self) {
-        /// 生成密码集合
-        /// ! 存在问题，不能直接生成到内存中，否则占用内存过高,暂时写入中间文件中
+    fn create_password_file(self:&Self)->Result<File,io::Error>{
 
         let tmp_path = Path::new("./tmp");
         if !tmp_path.exists(){
@@ -95,7 +92,7 @@ impl PasswordCreater {
         let file_path = tmp_path.join(filenmame);
        
 
-        let file = match File::create(file_path.clone()){
+        let file = match File::open(file_path.clone()){
             Ok(f) => {
                 println!("{} created",file_path.to_str().unwrap());
                 f
@@ -104,9 +101,45 @@ impl PasswordCreater {
                 panic!("{} created fail",file_path.to_str().unwrap());
             },
         };
-        
+
+        Ok(file)
+    }
+
+    fn create_password(length:u32,wts:&Vec<WordType>)->Vec<u8>{
+        let mut password = Vec::new();
+        for index in 0..length{
+            let wt = wts.get(index as usize).unwrap();
+            password.push(wt.create_until());
+        }
+        password
+    }
+
+    fn create_pwdtypes(length:u32,wts:&Vec<WordType>)->Vec<WordType>{
+        // 生成指定长度 密码格式Vec
+        let mut new_wrodtypes = Vec::new();
+        for i in 0..length{
+            let select = rand::thread_rng().gen_range(0..wts.len());
+            new_wrodtypes.push(*wts.get(select).unwrap());
+        }
+        new_wrodtypes
+    }
 
     
+
+    fn create_password_set(self: &Self) {
+        /// 生成密码集合
+        /// ! 存在问题，不能直接生成到内存中，否则占用内存过高,暂时写入中间文件中
+        
+        // 生成文件
+        let file = self.create_password_file().unwrap();
+        let mut buf = BufWriter::new(file);
+
+        for length in self.config.min_length..=self.config.max_length{
+            let wts = self.config.types.clone();
+            // 生成长度为length的密码
+            
+        }
+
         
     }
 
