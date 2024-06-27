@@ -8,7 +8,8 @@
 */
 use clap::Parser;
 use core::panic;
-use std::io;
+use std::io::{self, BufReader, BufWriter};
+use std::time::Instant;
 use rand::Rng;
 use std::{fs::File, path::Path};
 use zip::ZipArchive;
@@ -22,6 +23,7 @@ fn create_archive(path: &Path) -> Result<ZipArchive<File>, String> {
 }
 
 fn main() {
+    let start = Instant::now();
     let args_matcher: &Args = &Args::parse();
 
     let path = args_matcher.path.clone();
@@ -53,12 +55,24 @@ fn main() {
         let chars: Vec<char> = numbers.iter().map(|&b| b as char).collect();
         let password: String = chars.into_iter().collect();
 
-        println!("TRY TO APPLY PASSWORD {:?}:{:?} {:?}", password,password.as_bytes(),"123456".as_bytes());
+        println!("TRY TO APPLY PASSWORD {:?}:{:?}", password,password.as_bytes());
         let file = archive.by_index_decrypt(0, password.as_bytes());
+        let outfile = File::create("./res.md").unwrap();
+        let mut buffwriter = BufWriter::new(outfile);
         match file {
             Ok(f) => {
                 dbg!(f.enclosed_name());
-                break;
+                let mut reader = BufReader::new(f);
+                match io::copy(&mut reader, &mut buffwriter){
+                    Ok(_) => {
+                        let duration = start.elapsed();
+                        println!("RIGHT PASSWORD=>{},Time:{}",password,duration.as_secs_f64());
+                        break;
+                    },
+                    Err(_) => {
+                        continue;
+                    },
+                };
             },
             Err(_) => {},
         }
