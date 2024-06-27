@@ -53,15 +53,21 @@ fn main() {
         let chars: Vec<char> = numbers.iter().map(|&b| b as char).collect();
         let password: String = chars.into_iter().collect();
 
-        println!("TRY TO APPLY PASSWORD {:?}", password);
-        let file = archive.by_index_decrypt(0, numbers);
-        
-        let mut outfile = File::create("./res.md").unwrap();
-        if let Ok(mut f) = file {
-            println!("RIGHT PASSWORD=>{}:{}", password, f.name());
-            io::copy(&mut f, &mut outfile).unwrap();
-            break;
+        println!("TRY TO APPLY PASSWORD {:?}:{:?} {:?}", password,password.as_bytes(),"123456".as_bytes());
+        let file = archive.by_index_decrypt(0, password.as_bytes());
+        match file {
+            Ok(f) => {
+                dbg!(f.enclosed_name());
+                break;
+            },
+            Err(_) => {},
         }
+        // let mut outfile = File::create("./res.md").unwrap();
+        // if let Ok(mut f) = file {
+        //     println!("RIGHT PASSWORD=>{}\nFIRST FILE:{}", password, f.name());
+        //     io::copy(&mut f, &mut outfile).unwrap();
+        //     break;
+        // }
     }
  
 }
