@@ -1,8 +1,8 @@
-use std::{collections::btree_map::Range, fmt::format, fs::{DirBuilder, File}, io::{self, BufWriter, Write}, path::Path, vec};
+use std::{fs::{DirBuilder, File}, io::{self}, path::Path};
 
 use rand::{distributions::Alphanumeric, Rng};
 
-use crate::wordtype::{self, WordType};
+use crate::wordtype::WordType;
 
 // 定义密码生成规则
 #[derive(Default, Clone)]
@@ -28,14 +28,16 @@ impl PasswordConfig {
 
 #[derive(Clone)]
 struct Password {
+    #[allow(dead_code)]
     value: Vec<u8>,
 }
 
 impl Password {
+    #[allow(dead_code)]
     pub fn get_bpwd(self: &Self) -> Vec<u8> {
         self.value.clone()
     }
-
+    #[allow(dead_code)]
     pub fn get_pwd(self: &Self) -> String {
         todo!("将btype转换为String");
     }
@@ -45,6 +47,7 @@ impl Password {
 #[derive(Clone)]
 pub struct PasswordCreater {
     /// 密码（btype）
+    #[allow(dead_code)]
     passwords: Vec<Password>,
 
     /// 密码配置
@@ -58,7 +61,7 @@ impl PasswordCreater {
             config: config.clone(),
         }
     }
-
+    #[allow(dead_code)]
     fn create_rand_filename(self:&Self) -> String {
         rand::thread_rng()
             .sample_iter(&Alphanumeric)
@@ -67,7 +70,7 @@ impl PasswordCreater {
             .collect()
     }
 
-
+    #[allow(dead_code)]
     fn create_password_file(self:&Self)->Result<File,io::Error>{
 
         let tmp_path = Path::new("./tmp");
@@ -127,6 +130,7 @@ impl PasswordCreater {
     //     password
     // }
 
+    #[allow(dead_code)]
     fn create_pwdtypes(length:u32,wts:&Vec<WordType>)->Vec<WordType>{
         // 生成指定长度 密码格式Vec<WirdType>
         let mut new_wrodtypes = Vec::new();

@@ -1,8 +1,8 @@
+
 /*
  Project:ZipHammer
  Author:@LiDingyiii
 */
-
 /*
   TODO 引进tokio 实现多线程尝试密码
 */
@@ -47,7 +47,7 @@ fn main() {
     // 根据配置生成密码本
     let passwordcreater = &PasswordCreater::new(&passwordconfig);
 
-    let mut passwords: &mut Vec<String> = &mut Vec::new();
+    let passwords: &mut Vec<String> = &mut Vec::new();
 
     loop {
         let length =
