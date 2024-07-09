@@ -1,5 +1,4 @@
 use rand::{self, Rng};
-use crate::password::PasswordConfig;
 
 #[derive(Clone, Copy,Debug)]
 pub enum WordType {
@@ -24,13 +23,12 @@ impl WordType {
     //     }
     //     wordtypes_res
     // }
-
-    pub fn create_until(self: &Self) -> u8 {
+    pub fn create_until(self: &Self,b:bool) -> u8 {
         // 创建密码元素
         match self {
             WordType::Number => self.create_number(),
-            WordType::Letter => todo!(),
-            WordType::Special => todo!(),
+            WordType::Letter => self.create_letter(b),
+            WordType::Special => self.create_special(),
         }
     }
 
@@ -62,6 +60,23 @@ impl WordType {
     }
 
     pub fn create_special(self: &Self) -> u8 {
-        todo!("创建特殊字符元素")
+        let r1 = 32..=64;
+        let r2 = 91..=96;
+        let r3 = 123..=126;
+    
+        let ranges = [r1, r2, r3]; // 将范围放入数组中
+    
+        // 获取一个随机索引来选择范围
+        let mut rng = rand::thread_rng();
+        let index = rng.gen_range(0..ranges.len());
+    
+        // 根据随机索引选择范围，并生成随机值
+        let random_value = match index {
+            0 => rng.gen_range(ranges[0].clone()),
+            1 => rng.gen_range(ranges[1].clone()),
+            2 => rng.gen_range(ranges[2].clone()),
+            _ => unreachable!(), // 理论上不会执行到这里，因为索引总是0、1或2
+        };
+        random_value as u8
     }
 }

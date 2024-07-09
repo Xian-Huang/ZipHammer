@@ -15,11 +15,11 @@ pub struct Args {
     pub length: u32,
 
     ///密码最大长度，设置该参数后必须设置 最小长度 且 length无效
-    #[arg(long,required=false)]
+    #[arg(long, required = false, default_value_t = 0)]
     pub min_length: u32,
 
     ///密码最大长度，设置该参数后必须设置 最大长度 且 length无效
-    #[arg(long,required=false)]
+    #[arg(long, required = false, default_value_t = 0)]
     pub max_length: u32,
 
     /// 密码中是否包含数字[0-9],默认包含
@@ -43,7 +43,6 @@ pub struct Args {
 //     /*
 //         TODO 根据参数创建密码本
 //     */
-
 //     let mut password_type: Vec<WordType> = Vec::new();
 
 //     let mut passwords: Vec<String> = Vec::new();
@@ -69,13 +68,22 @@ pub fn get_passwordconfig(args: &Args) -> Result<PasswordConfig, ArgError> {
     if wordtypes.len() <= 0 {
         return Err(ArgError::new());
     }
-    
+
+    let maxl;
+    let minl;
+    if args.min_length == 0 || args.max_length == 0 {
+        maxl = args.length;
+        minl = args.length;
+    } else {
+        maxl = args.max_length;
+        minl = args.min_length;
+    }
 
     Ok(PasswordConfig {
         types: wordtypes,
         capital: args.capital,
-        min_length: args.min_length,
-        max_length: args.max_length,
+        min_length: minl,
+        max_length: maxl,
     })
 }
 

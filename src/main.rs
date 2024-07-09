@@ -8,9 +8,9 @@
 */
 use clap::Parser;
 use core::panic;
+use rand::Rng;
 use std::io::{self, BufReader, BufWriter};
 use std::time::Instant;
-use rand::Rng;
 use std::{fs::File, path::Path};
 use zip::ZipArchive;
 use ZipHammer::Args;
@@ -47,6 +47,8 @@ fn main() {
     // 根据配置生成密码本
     let passwordcreater = &PasswordCreater::new(&passwordconfig);
 
+    let mut passwords: &mut Vec<String> = &mut Vec::new();
+
     loop {
         let length =
             rand::thread_rng().gen_range(passwordconfig.min_length..=passwordconfig.max_length);
@@ -54,8 +56,18 @@ fn main() {
         let numbers = &passwordcreater.clone().create_password(length);
         let chars: Vec<char> = numbers.iter().map(|&b| b as char).collect();
         let password: String = chars.into_iter().collect();
+        if passwords.contains(&password.clone()) {
+            continue;
+        } else {
+            passwords.push(password.clone())
+        }
 
-        println!("TRY TO APPLY PASSWORD {:?}:{:?}", password,password.as_bytes());
+        println!(
+            "TRY TO APPLY PASSWORD {:?}:{:?}:{}",
+            password,
+            password.as_bytes(),
+            passwords.len()
+        );
         let file = archive.by_index_decrypt(0, password.as_bytes());
         let outfile = File::create("./res.md").unwrap();
         let mut buffwriter = BufWriter::new(outfile);
@@ -63,18 +75,22 @@ fn main() {
             Ok(f) => {
                 dbg!(f.enclosed_name());
                 let mut reader = BufReader::new(f);
-                match io::copy(&mut reader, &mut buffwriter){
+                match io::copy(&mut reader, &mut buffwriter) {
                     Ok(_) => {
                         let duration = start.elapsed();
-                        println!("RIGHT PASSWORD=>{},Time:{}",password,duration.as_secs_f64());
+                        println!(
+                            "RIGHT PASSWORD=>{},Time:{}",
+                            password,
+                            duration.as_secs_f64()
+                        );
                         break;
-                    },
+                    }
                     Err(_) => {
                         continue;
-                    },
+                    }
                 };
-            },
-            Err(_) => {},
+            }
+            Err(_) => {}
         }
         // let mut outfile = File::create("./res.md").unwrap();
         // if let Ok(mut f) = file {
@@ -83,5 +99,4 @@ fn main() {
         //     break;
         // }
     }
- 
 }

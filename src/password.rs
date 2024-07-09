@@ -112,7 +112,7 @@ impl PasswordCreater {
         for _ in 0..length{
             let select: usize = rand::thread_rng().gen_range(0..types.len());
             let wt = types.get(select).unwrap();
-            password.push(wt.create_until());
+            password.push(wt.create_until(self.config.capital));
         }
         password
     }
