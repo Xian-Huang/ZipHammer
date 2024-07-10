@@ -65,6 +65,10 @@ pub fn get_passwordconfig(args: &Args) -> Result<PasswordConfig, ArgError> {
         wordtypes.push(WordType::Number);
     }
 
+    if args.special{
+        wordtypes.push(WordType::Special);
+    }
+
     if wordtypes.len() <= 0 {
         return Err(ArgError::new());
     }
