@@ -30,15 +30,15 @@ pub struct Args {
     #[arg(short, long, default_value_t = true)]
     pub number: bool,
 
-    // 密码中是否包含字母[a-z],默认包含
+    /// 密码中是否包含字母[a-z],默认包含
     #[arg(long, default_value_t = false)]
     pub isletter: bool,
 
-    // 字母是否开启大小写
+    /// 字母是否开启大小写
     #[arg(short, long, default_value_t = false)]
     pub capital: bool,
 
-    // 密码中是否包含特殊字符 默认不包含
+    /// 密码中是否包含特殊字符 默认不包含
     #[arg(short, long, default_value_t = false)]
     pub special: bool,
 }
