@@ -92,11 +92,5 @@ fn main() {
             }
             Err(_) => {}
         }
-        // let mut outfile = File::create("./res.md").unwrap();
-        // if let Ok(mut f) = file {
-        //     println!("RIGHT PASSWORD=>{}\nFIRST FILE:{}", password, f.name());
-        //     io::copy(&mut f, &mut outfile).unwrap();
-        //     break;
-        // }
     }
 }
