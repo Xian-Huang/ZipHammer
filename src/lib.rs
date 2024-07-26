@@ -1,4 +1,9 @@
-use std::{fs::File, io::{self, BufReader, BufWriter}, path::Path, time::Instant};
+use std::{
+    fs::File,
+    io::{self, BufReader, BufWriter},
+    path::Path,
+    time::Instant,
+};
 
 use crate::error::ArgError;
 use clap::Parser;
@@ -105,7 +110,7 @@ fn create_archive(path: &Path) -> Result<ZipArchive<File>, String> {
     Ok(archive)
 }
 
-pub fn hammer(path: String,args:&Args) {
+pub fn hammer(path: String, args: &Args) {
     let start = Instant::now();
 
     let mut archive = match create_archive(Path::new(path.as_str())) {
@@ -127,49 +132,53 @@ pub fn hammer(path: String,args:&Args) {
     let passwordcreater = &PasswordCreater::new(&passwordconfig);
 
     let passwords: &mut Vec<String> = &mut Vec::new();
+    // 引入tokio
+    let mut rt = tokio::runtime::Runtime::new().expect("tokio runtime start fail");
 
     loop {
-        let length =
-            rand::thread_rng().gen_range(passwordconfig.min_length..=passwordconfig.max_length);
+        rt.block_on(async {
+            let length =
+                rand::thread_rng().gen_range(passwordconfig.min_length..=passwordconfig.max_length);
 
-        let numbers = &passwordcreater.clone().create_password(length);
-        let chars: Vec<char> = numbers.iter().map(|&b| b as char).collect();
-        let password: String = chars.into_iter().collect();
-        if passwords.contains(&password.clone()) {
-            continue;
-        } else {
-            passwords.push(password.clone())
-        }
-
-        println!(
-            "TRY TO APPLY PASSWORD {:?}:{:?}:{}",
-            password,
-            password.as_bytes(),
-            passwords.len()
-        );
-        let file = archive.by_index_decrypt(0, password.as_bytes());
-        let outfile = File::create("./res.md").unwrap();
-        let mut buffwriter = BufWriter::new(outfile);
-        match file {
-            Ok(f) => {
-                dbg!(f.enclosed_name());
-                let mut reader = BufReader::new(f);
-                match io::copy(&mut reader, &mut buffwriter) {
-                    Ok(_) => {
-                        let duration = start.elapsed();
-                        println!(
-                            "RIGHT PASSWORD=>{},Time:{}",
-                            password,
-                            duration.as_secs_f64()
-                        );
-                        break;
-                    }
-                    Err(_) => {
-                        continue;
-                    }
-                };
+            let numbers = &passwordcreater.clone().create_password(length);
+            let chars: Vec<char> = numbers.iter().map(|&b| b as char).collect();
+            let password: String = chars.into_iter().collect();
+            if !passwords.contains(&password.clone()) {
+                return;
+            } else {
+                passwords.push(password.clone())
             }
-            Err(_) => {}
-        }
+
+            println!(
+                "TRY TO APPLY PASSWORD {:?}:{:?}:{}",
+                password,
+                password.as_bytes(),
+                passwords.len()
+            );
+            let file = archive.by_index_decrypt(0, password.as_bytes());
+            let outfile = File::create("./res.md").unwrap();
+            let mut buffwriter = BufWriter::new(outfile);
+            match file {
+                Ok(f) => {
+                    dbg!(f.enclosed_name());
+                    let mut reader = BufReader::new(f);
+                    match io::copy(&mut reader, &mut buffwriter) {
+                        Ok(_) => {
+                            let duration = start.elapsed();
+                            println!(
+                                "RIGHT PASSWORD=>{},Time:{}",
+                                password,
+                                duration.as_secs_f64()
+                            );
+                            return;
+                        }
+                        Err(_) => {
+                            return;
+                        }
+                    };
+                }
+                Err(_) => {}
+            }
+        });
     }
 }
