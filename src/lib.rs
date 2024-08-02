@@ -9,6 +9,7 @@ use crate::error::ArgError;
 use clap::Parser;
 use password::{PasswordConfig, PasswordCreater};
 use rand::Rng;
+use tokio::sync::broadcast;
 use wordtype::WordType;
 use zip::ZipArchive;
 
@@ -48,18 +49,6 @@ pub struct Args {
     pub special: bool,
 }
 
-// pub fn create_pwds(length: u8) -> Result<Vec<String>, String> {
-//     /*
-//         TODO 根据参数创建密码本
-//     */
-//     let mut password_type: Vec<WordType> = Vec::new();
-
-//     let mut passwords: Vec<String> = Vec::new();
-
-//     for i in 0..length {}
-
-//     Ok(passwords)
-// }
 
 pub fn get_passwordconfig(args: &Args) -> Result<PasswordConfig, ArgError> {
     // 创建PasswordConfig
@@ -137,6 +126,9 @@ pub fn hammer(path: String, args: &Args) {
         .worker_threads(4)
         .build()
         .expect("tokio runtime start fail");
+
+    // TODO 添加结束信号
+
     loop {
         let result = rt.block_on(async {
             let length =
@@ -145,12 +137,11 @@ pub fn hammer(path: String, args: &Args) {
             let numbers = &passwordcreater.clone().create_password(length);
             let chars: Vec<char> = numbers.iter().map(|&b| b as char).collect();
             let password: String = chars.into_iter().collect();
-            if !passwords.contains(&password.clone()) {
-                return;
-            } else {
-                passwords.push(password.clone())
-            }
-
+            // if !passwords.contains(&password.clone()) {
+            //     return;
+            // } else {
+            //     passwords.push(password.clone())
+            // }
             println!(
                 "TRY TO APPLY PASSWORD {:?}:{:?}:{}",
                 password,
@@ -185,6 +176,9 @@ pub fn hammer(path: String, args: &Args) {
                     (e.to_string(),-1.)
                 }
             };
+            while let Ok(_) = rx.recv().await {
+                // 接收到信号，执行一些清理工作
+            }
         });
     }
 }
