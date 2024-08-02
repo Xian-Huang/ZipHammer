@@ -5,20 +5,23 @@
 /*
   TODO 引进tokio 实现多线程尝试密码
 */
-slint::include_modules!();
+//slint::include_modules!();
 
 use clap::Parser;
 use ZipHammer::{hammer, Args};
 
-// fn main() {
-//     let args_matcher: &Args = &Args::parse();
-//     let path = args_matcher.path.clone();
-//     hammer(path, args_matcher);
-// }
-
 fn main() {
-    let mainwindow = MainWindow::new().unwrap();
-    
-    #[warn(unused_must_use)]
-    mainwindow.run();
+    let args_matcher: &Args = &Args::parse();
+    let path = args_matcher.path.clone();
+    hammer(path, args_matcher);
 }
+
+
+
+// fn main() {
+    // let mainwindow = MainWindow::new().unwrap();
+
+    // #[warn(unused_must_use)]
+    // mainwindow.run();
+
+// }

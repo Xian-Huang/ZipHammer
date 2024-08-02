@@ -133,10 +133,12 @@ pub fn hammer(path: String, args: &Args) {
 
     let passwords: &mut Vec<String> = &mut Vec::new();
     // 引入tokio
-    let mut rt = tokio::runtime::Runtime::new().expect("tokio runtime start fail");
-
+    let mut rt = tokio::runtime::Builder::new_multi_thread()
+        .worker_threads(4)
+        .build()
+        .expect("tokio runtime start fail");
     loop {
-        rt.block_on(async {
+        let result = rt.block_on(async {
             let length =
                 rand::thread_rng().gen_range(passwordconfig.min_length..=passwordconfig.max_length);
 
@@ -158,11 +160,11 @@ pub fn hammer(path: String, args: &Args) {
             let file = archive.by_index_decrypt(0, password.as_bytes());
             let outfile = File::create("./res.md").unwrap();
             let mut buffwriter = BufWriter::new(outfile);
-            match file {
+            let _file_res: (String, f64) = match file {
                 Ok(f) => {
                     dbg!(f.enclosed_name());
                     let mut reader = BufReader::new(f);
-                    match io::copy(&mut reader, &mut buffwriter) {
+                    let res: (String, f64) = match io::copy(&mut reader, &mut buffwriter) {
                         Ok(_) => {
                             let duration = start.elapsed();
                             println!(
@@ -170,15 +172,19 @@ pub fn hammer(path: String, args: &Args) {
                                 password,
                                 duration.as_secs_f64()
                             );
-                            return;
+                            (password, duration.as_secs_f64())
                         }
-                        Err(_) => {
-                            return;
+                        Err(e) => {
+                            let duration = start.elapsed();
+                            (e.to_string(), duration.as_secs_f64())
                         }
                     };
+                    res
                 }
-                Err(_) => {}
-            }
+                Err(e) => {
+                    (e.to_string(),-1.)
+                }
+            };
         });
     }
 }
