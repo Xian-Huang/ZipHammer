@@ -1,15 +1,12 @@
 use std::{
-    fs::File,
-    io::{self, BufReader, BufWriter},
-    path::Path,
-    time::Instant,
+    fs::File, io::{self, BufReader, BufWriter}, path::Path, sync::{Arc, Mutex}, thread, time::Instant
 };
 
 use crate::error::ArgError;
 use clap::Parser;
 use password::{PasswordConfig, PasswordCreater};
 use rand::Rng;
-use tokio::sync::broadcast;
+use tokio::sync::{broadcast, Semaphore};
 use wordtype::WordType;
 use zip::ZipArchive;
 
@@ -48,7 +45,6 @@ pub struct Args {
     #[arg(short, long, default_value_t = false)]
     pub special: bool,
 }
-
 
 pub fn get_passwordconfig(args: &Args) -> Result<PasswordConfig, ArgError> {
     // 创建PasswordConfig
@@ -99,7 +95,7 @@ fn create_archive(path: &Path) -> Result<ZipArchive<File>, String> {
     Ok(archive)
 }
 
-pub fn hammer(path: String, args: &Args) {
+pub async fn hammer(path: String, args: &Args) {
     let start = Instant::now();
 
     let mut archive = match create_archive(Path::new(path.as_str())) {
@@ -122,63 +118,54 @@ pub fn hammer(path: String, args: &Args) {
 
     let passwords: &mut Vec<String> = &mut Vec::new();
     // 引入tokio
-    let mut rt = tokio::runtime::Builder::new_multi_thread()
-        .worker_threads(4)
-        .build()
-        .expect("tokio runtime start fail");
-
-    // TODO 添加结束信号
-
+    let passwords = Arc::new(Mutex::new(passwords));
+    let semaphore = Arc::new(Semaphore::new(3));
     loop {
-        let result = rt.block_on(async {
-            let length =
-                rand::thread_rng().gen_range(passwordconfig.min_length..=passwordconfig.max_length);
+        let permit = semaphore.clone().acquire_owned().await.unwrap();
+        let pwds = passwords.lock().unwrap();
 
-            let numbers = &passwordcreater.clone().create_password(length);
-            let chars: Vec<char> = numbers.iter().map(|&b| b as char).collect();
-            let password: String = chars.into_iter().collect();
-            // if !passwords.contains(&password.clone()) {
-            //     return;
-            // } else {
-            //     passwords.push(password.clone())
-            // }
-            println!(
-                "TRY TO APPLY PASSWORD {:?}:{:?}:{}",
-                password,
-                password.as_bytes(),
-                passwords.len()
-            );
-            let file = archive.by_index_decrypt(0, password.as_bytes());
-            let outfile = File::create("./res.md").unwrap();
-            let mut buffwriter = BufWriter::new(outfile);
-            let _file_res: (String, f64) = match file {
-                Ok(f) => {
-                    dbg!(f.enclosed_name());
-                    let mut reader = BufReader::new(f);
-                    let res: (String, f64) = match io::copy(&mut reader, &mut buffwriter) {
-                        Ok(_) => {
-                            let duration = start.elapsed();
-                            println!(
-                                "RIGHT PASSWORD=>{},Time:{}",
-                                password,
-                                duration.as_secs_f64()
-                            );
-                            (password, duration.as_secs_f64())
-                        }
-                        Err(e) => {
-                            let duration = start.elapsed();
-                            (e.to_string(), duration.as_secs_f64())
-                        }
-                    };
-                    res
-                }
-                Err(e) => {
-                    (e.to_string(),-1.)
-                }
-            };
-            while let Ok(_) = rx.recv().await {
-                // 接收到信号，执行一些清理工作
+        let length =   rand::thread_rng().gen_range(passwordconfig.min_length..=passwordconfig.max_length);
+
+        let numbers = &passwordcreater.clone().create_password(length);
+        let chars: Vec<char> = numbers.iter().map(|&b| b as char).collect();
+        let password: String = chars.into_iter().collect();
+        // if !passwords.contains(&password.clone()) {
+        //     return;
+        // } else {
+        //     passwords.push(password.clone())
+        // }
+        println!(
+            "TRY TO APPLY PASSWORD {:?}:{:?}:{}",
+            password,
+            password.as_bytes(),
+            pwds.len()
+        );
+        let file = archive.by_index_decrypt(0, password.as_bytes());
+        let outfile = File::create("./res.md").unwrap();
+        let mut buffwriter = BufWriter::new(outfile);
+        let _file_res: (String, f64) = match file {
+            Ok(f) => {
+                dbg!(f.enclosed_name());
+                let mut reader = BufReader::new(f);
+                let res: (String, f64) = match io::copy(&mut reader, &mut buffwriter) {
+                    Ok(_) => {
+                        let duration = start.elapsed();
+                        println!(
+                            "RIGHT PASSWORD=>{},Time:{}",
+                            password,
+                            duration.as_secs_f64()
+                        );
+                        (password, duration.as_secs_f64())
+                    }
+                    Err(e) => {
+                        let duration = start.elapsed();
+                        (e.to_string(), duration.as_secs_f64())
+                    }
+                };
+                res
             }
-        });
+            Err(e) => (e.to_string(), -1.),
+        };
+        drop(permit);
     }
 }
