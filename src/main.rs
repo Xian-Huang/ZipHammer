@@ -13,7 +13,9 @@ use ZipHammer::{hammer, Args};
 fn main() {
     let args_matcher: &Args = &Args::parse();
     let path = args_matcher.path.clone();
-    hammer(path, args_matcher);
+    println!("file path: {}",path);
+    println!("args: {:?}",args_matcher);
+    let _ =hammer(path, args_matcher);
 }
 
 
