@@ -2,9 +2,6 @@
  Project:ZipHammer
  Author:@LiDingyiii
 */
-/*
-  TODO 引进tokio 实现多线程尝试密码
-*/
 //slint::include_modules!();
 
 use clap::Parser;

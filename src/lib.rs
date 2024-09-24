@@ -1,12 +1,16 @@
 use std::{
-    fs::File, io::{self, BufReader, BufWriter}, path::Path, process::exit, sync::{Arc, Mutex}, thread, time::Instant
+    fs::File,
+    io::{self, BufReader, BufWriter},
+    path::Path,
+    process::exit,
+    sync::{Arc, Mutex},
+    thread,
 };
 
 use crate::error::ArgError;
 use clap::Parser;
 use password::{PasswordConfig, PasswordCreater};
 use rand::Rng;
-use tokio::sync::{broadcast, Semaphore};
 use wordtype::WordType;
 use zip::ZipArchive;
 
@@ -44,6 +48,10 @@ pub struct Args {
     /// 密码中是否包含特殊字符 默认不包含
     #[arg(short, long, default_value_t = false)]
     pub special: bool,
+
+    /// 密码中是否包含特殊字符 默认不包含
+    #[arg(short, long, default_value_t = 0)]
+    pub thread_count: i32,
 }
 
 pub fn get_passwordconfig(args: &Args) -> Result<PasswordConfig, ArgError> {
@@ -95,61 +103,59 @@ fn create_archive(path: &Path) -> Result<ZipArchive<File>, String> {
     Ok(archive)
 }
 
+fn try_hammer(
+    archive: &mut ZipArchive<File>,
+    passwords: &Arc<Mutex<Vec<String>>>,
+    passwordconfig: &password::PasswordConfig,
+    passwordcreater: &Arc<Mutex<PasswordCreater>>,
+) {
+    let mut pwds = passwords.lock().unwrap();
 
+    let length =
+        rand::thread_rng().gen_range(passwordconfig.min_length..=passwordconfig.max_length);
 
+    let binding = Arc::clone(passwordcreater);
+    let pwdc = binding.lock().unwrap();
 
-fn try_hammer(archive:&mut ZipArchive<File>,passwords:&Arc<Mutex<Vec<String>>>,passwordconfig:&password::PasswordConfig,passwordcreater:&Arc<Mutex<PasswordCreater>>){
-        let pwds = passwords.lock().unwrap();
+    let numbers = pwdc.clone().create_password(length);
+    let chars: Vec<char> = numbers.iter().map(|&b| b as char).collect();
+    let password: String = chars.into_iter().collect();
+    if pwds.contains(&password){
+        return;
+    }else{
+        pwds.push(password.clone());
+    }
 
-        let length = rand::thread_rng().gen_range(passwordconfig.min_length..=passwordconfig.max_length);
-
-        let binding = Arc::clone(passwordcreater);
-        let pwdc = binding.lock().unwrap();
-
-        let numbers = pwdc.clone().create_password(length);
-        let chars: Vec<char> = numbers.iter().map(|&b| b as char).collect();
-        let password: String = chars.into_iter().collect();
-        // if !passwords.contains(&password.clone()) {
-        //     return;
-        // } else {
-        //     passwords.push(password.clone())
-        // }
-        let current_thread_id = thread::current().id();
-        println!(
-            "TRY TO APPLY PASSWORD {:?}:{:?}:{}::{:?}",
-            password,
-            password.as_bytes(),
-            pwds.len(),
-            current_thread_id
-        );
-        let file = archive.by_index_decrypt(0, password.as_bytes());
-        let outfile = File::create("./1.md").unwrap();
-        let mut buffwriter = BufWriter::new(outfile);
-        match file {
-            Ok(f) => {
-                dbg!(f.enclosed_name());
-                let mut reader = BufReader::new(f);
-                match io::copy(&mut reader, &mut buffwriter) {
-                    Ok(_) => {
-                        println!(
-                            "RIGHT PASSWORD=>{}",
-                            password
-                        );
-                        exit(0);
-                    },
-                    Err(_) => {}
-                };
-            }
-            Err(_) => {}
-        };
+    let current_thread_id = thread::current().id();
+    println!(
+        "TRY TO APPLY PASSWORD {:?}:{:?}::{:?},try password count:{}",
+        password,
+        password.as_bytes(),
+        current_thread_id,
+        pwds.len()
+    );
+    let file = archive.by_index_decrypt(0, password.as_bytes());
+    let outfile = File::create("./1.md").unwrap();
+    let mut buffwriter = BufWriter::new(outfile);
+    match file {
+        Ok(f) => {
+            dbg!(f.enclosed_name());
+            let mut reader = BufReader::new(f);
+            match io::copy(&mut reader, &mut buffwriter) {
+                Ok(_) => {
+                    println!("RIGHT PASSWORD=>{}", password);
+                    exit(0);
+                }
+                Err(_) => {}
+            };
+        }
+        Err(_) => {}
+    };
 }
 
 pub fn hammer(path: String, args: &Args) {
-
-    let start = Instant::now();
-
     // 根据参数生成密码配置
-    let passwordconfig= &match get_passwordconfig(args) {
+    let passwordconfig = &match get_passwordconfig(args) {
         Ok(config) => config,
         Err(_) => {
             panic!("PasswordConfig Created Fail");
@@ -160,9 +166,11 @@ pub fn hammer(path: String, args: &Args) {
     let passwordcreater: PasswordCreater = PasswordCreater::new(passwordconfig);
     let mutex_pwdc = Arc::new(Mutex::new(passwordcreater));
 
-    let mut passwords: Vec<String> = Vec::new();
     // 引入tokio
-    let runtime = tokio::runtime::Builder::new_multi_thread().worker_threads(4).build().unwrap();
+    let runtime = tokio::runtime::Builder::new_multi_thread()
+        .worker_threads(4)
+        .build()
+        .unwrap();
     let passwords_arc = Arc::new(Mutex::new(Vec::new()));
     let mut handles = Vec::new();
     // let semaphore = Arc::new(Semaphore::new(3));
@@ -181,5 +189,5 @@ pub fn hammer(path: String, args: &Args) {
             try_hammer(&mut archive, &pwda, &config, &mutext_pwdc_clone);
         });
         handles.push(handle);
-     }
+    }
 }
