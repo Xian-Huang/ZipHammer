@@ -135,7 +135,7 @@ fn try_hammer(
         pwds.len()
     );
     let file = archive.by_index_decrypt(0, password.as_bytes());
-    let outfile = File::create("./1.md").unwrap();
+    let outfile = File::create("./tmp").unwrap();
     let mut buffwriter = BufWriter::new(outfile);
     match file {
         Ok(f) => {
@@ -162,12 +162,12 @@ pub fn hammer(path: String, args: &Args) {
         }
     };
 
-    // 根据配置生成密码本
+    // 根据配置生成密码创建期
     let passwordcreater: PasswordCreater = PasswordCreater::new(passwordconfig);
     let mutex_pwdc = Arc::new(Mutex::new(passwordcreater));
 
     // 引入tokio
-    let runtime = tokio::runtime::Builder::new_multi_thread()
+    let runtime: tokio::runtime::Runtime = tokio::runtime::Builder::new_multi_thread()
         .worker_threads(4)
         .build()
         .unwrap();
@@ -191,3 +191,7 @@ pub fn hammer(path: String, args: &Args) {
         handles.push(handle);
     }
 }
+
+
+
+pub mod tests;
