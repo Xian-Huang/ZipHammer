@@ -120,15 +120,6 @@ impl PasswordCreater {
         password
     }
 
-    // fn create_password(length:u32,wts:&Vec<WordType>)->Vec<u8>{
-    //     // ! 应当按照顺序生成 而不是随机生成
-    //     let mut password = Vec::new();
-    //     for index in 0..length{
-    //         let wt = wts.get(index as usize).unwrap();
-    //         password.push(wt.create_until());
-    //     }
-    //     password
-    // }
 
     #[allow(dead_code)]
     fn create_pwdtypes(length:u32,wts:&Vec<WordType>)->Vec<WordType>{
@@ -141,20 +132,4 @@ impl PasswordCreater {
         new_wrodtypes
     }
 
-    
-
-    // fn create_password_set(self: &Self) {
-    //     /// 生成密码集合
-    //     /// ! 存在问题，不能直接生成到内存中，否则占用内存过高,暂时写入中间文件中
-        
-    //     // 生成文件
-    //     let file = self.create_password_file().unwrap();
-    //     let mut buf = BufWriter::new(file);
-
-    // }
-
-    // fn get_password_set(self: &Self) -> &Vec<Password> {
-    //     /// 获取密码集合
-    //     &self.passwords
-    // }
 }

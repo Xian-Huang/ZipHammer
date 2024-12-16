@@ -13,7 +13,7 @@ use password::{PasswordConfig, PasswordCreater};
 use rand::Rng;
 use wordtype::WordType;
 use zip::ZipArchive;
-
+pub mod tests;
 #[derive(Parser, Debug)]
 #[command(version, about, long_about = None)]
 pub struct Args {
@@ -97,13 +97,13 @@ pub mod error;
 pub mod password;
 pub mod wordtype;
 
-fn create_archive(path: &Path) -> Result<ZipArchive<File>, String> {
+pub fn create_archive(path: &Path) -> Result<ZipArchive<File>, String> {
     let file = File::open(path);
     let archive = zip::ZipArchive::new(file.unwrap()).unwrap();
     Ok(archive)
 }
 
-fn try_hammer(
+pub fn try_hammer(
     archive: &mut ZipArchive<File>,
     passwords: &Arc<Mutex<Vec<String>>>,
     passwordconfig: &password::PasswordConfig,
@@ -120,9 +120,9 @@ fn try_hammer(
     let numbers = pwdc.clone().create_password(length);
     let chars: Vec<char> = numbers.iter().map(|&b| b as char).collect();
     let password: String = chars.into_iter().collect();
-    if pwds.contains(&password){
+    if pwds.contains(&password) {
         return;
-    }else{
+    } else {
         pwds.push(password.clone());
     }
 
@@ -191,7 +191,3 @@ pub fn hammer(path: String, args: &Args) {
         handles.push(handle);
     }
 }
-
-
-
-pub mod tests;
